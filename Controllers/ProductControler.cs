@@ -14,10 +14,12 @@ namespace Store.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
+        private readonly ILogger<EmployeeController> _logger;
 
-    public ProductController(IProductService productService)
+    public ProductController(IProductService productService, ILogger<EmployeeController> logger)
     {
         _productService = productService;
+        _logger = logger;
     }
 
     [HttpGet("{id}")]
