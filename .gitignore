@@ -6,7 +6,9 @@
 # Ignore build outputs
 bin/
 obj/
-Properties/
+.vs/    
+*.user
+*.suo
 
 # dotenv files
 .env
