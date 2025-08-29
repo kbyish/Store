@@ -77,7 +77,7 @@ public class ProductController : ControllerBase
         }
     }
 
-
+[HttpDelete]
     public async Task Delete(long id)
     {
         await _productService.Delete(id);
