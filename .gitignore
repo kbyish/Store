@@ -3,13 +3,6 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-# Ignore build outputs
-bin/
-obj/
-.vs/    
-*.user
-*.suo
-
 # dotenv files
 .env
 
@@ -41,7 +34,6 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
-
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
