@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Store.AppDataContext;
 using Store.Interface;
+using Store.MappingProfile;
 using Store.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     
 // Add services to the container.
 builder.Services.AddScoped<IProductService, ProductService>();
+
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(ProductMappingProfile).Assembly);
 
 
 builder.Services.AddControllers();

@@ -40,3 +40,11 @@
     Connect Retry Count=1;
     Connect Retry Interval=10;
     Command Timeout=30
+
+
+4- Mapper Framework: AutoMapper
+    dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
+    then ceate Mapping class 
+    then register it in Program 
+
+

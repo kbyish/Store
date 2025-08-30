@@ -8,7 +8,8 @@ public interface IProductService
     Task<Product?> GetProductByIdAsync(long id); // for active products
 
 
-    //POST
+    //POST 
+    Task<Product> CreateAsync(Product product);
     Task<List<Product>> UploadProductCSVFile(IFormFile file);
 
     //Delete 

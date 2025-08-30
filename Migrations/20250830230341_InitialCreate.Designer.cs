@@ -11,7 +11,7 @@ using Store.AppDataContext;
 namespace Store.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250829234927_InitialCreate")]
+    [Migration("20250830230341_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
