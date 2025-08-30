@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+using Store.AppDataContext;
 using Store.Interface;
 using Store.Models;
 
@@ -6,6 +8,14 @@ namespace Store.Services;
 
 public class ProductService : IProductService
 {
+
+    private readonly AppDbContext _context;
+
+    public ProductService(AppDbContext context)
+    {
+        _context = context;
+    }
+
     IEnumerable<Product> products = [
         new (){Id = 1, Name = "product 1",  Description = "product Description 1 ", Price = 1.2m, Category = "Category 1" },
         new (){Id = 2, Name = "product 2",  Description = "product Description 2 ", Price = 2.2m, Category = "Category 2" },
@@ -13,8 +23,10 @@ public class ProductService : IProductService
     ];
     public async Task<Product?> GetProductByIdAsync(long id)
     {
-        await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
-        return products.FirstOrDefault(p => p.Id == id);
+        // await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
+        //return products.FirstOrDefault(p => p.Id == id);
+        var x = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+        return x;
 
     }
 
@@ -47,9 +59,20 @@ public class ProductService : IProductService
     }
 
 
-    public async Task Delete(long id)
+    public async Task<bool> Delete(long id)
     {
         await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
-        
+
+        var product = await _context.Products.FindAsync(id);
+
+        if (product?.Id == id)
+        {
+            _context.Products.Remove(product); // Remove from database
+            await _context.SaveChangesAsync();
+            return true; // Deletion successful
+        }
+
+        return false;
+
     }
 }

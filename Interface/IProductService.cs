@@ -12,7 +12,7 @@ public interface IProductService
     Task<List<Product>> UploadProductCSVFile(IFormFile file);
 
     //Delete 
-    Task Delete(long id);
+    Task<bool> Delete(long id);
     /*
         // POST method for creating a new product
         Task<Product> CreateAsync(Product product);

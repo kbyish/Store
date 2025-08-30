@@ -14,7 +14,7 @@ namespace Store.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
-        private readonly ILogger<EmployeeController> _logger;
+    private readonly ILogger<EmployeeController> _logger;
 
     public ProductController(IProductService productService, ILogger<EmployeeController> logger)
     {
@@ -27,7 +27,7 @@ public class ProductController : ControllerBase
     {
 
         var product = await _productService.GetProductByIdAsync(id);
-        if (product == null)
+        if (product is null)
         {
             return NoContent();
         }
@@ -54,7 +54,7 @@ public class ProductController : ControllerBase
     [HttpPost("UploadCsv")]
     public async Task<IActionResult> UploadCsv(IFormFile file)
     {
-        if (file == null || file.Length == 0)
+        if (file is  null || file.Length == 0)
         {
             return BadRequest("No file uploaded or file is empty.");
         }
@@ -79,9 +79,15 @@ public class ProductController : ControllerBase
         }
     }
 
-[HttpDelete]
-    public async Task Delete(long id)
+    [HttpDelete]
+    public async Task<ActionResult> Delete(long id)
     {
-        await _productService.Delete(id);
+        bool isDeleted = await _productService.Delete(id);
+        if (isDeleted)
+        {
+            return NoContent();
+        }
+
+        return NotFound();
     }
 }
