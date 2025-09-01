@@ -45,6 +45,20 @@ public class ProductService : IProductService
         return product;
     }
 
+    public async Task<Product?> UpdateAsync(long id, Product product)
+    {
+        var existing = await _dbContext.Products.FindAsync(id);
+        if (existing == null) return null;
+
+        existing.Name = product.Name;
+        existing.Description = product.Description;
+        existing.Price = product.Price;
+        existing.Category = product.Category;
+
+        await _dbContext.SaveChangesAsync();
+        return existing;
+    }
+
     public async Task<bool> Delete(long id)
     {
         await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
@@ -59,11 +73,10 @@ public class ProductService : IProductService
         }
 
         return false;
-
     }
 
 
-    public async Task<(int,int)> UploadProductCSVFile(IFormFile file, int minimumNumOfLines)
+    public async Task<(int, int)> UploadProductCSVFile(IFormFile file, int minimumNumOfLines)
     {
         List<string> lines1 = [];
         List<string> lines2 = [];
@@ -95,7 +108,7 @@ public class ProductService : IProductService
             Task.Run(() => ProcessLines(lines2))
         };
 
-       int[]NumberOfProductSaved = await Task.WhenAll(tasks);
+        int[] NumberOfProductSaved = await Task.WhenAll(tasks);
         return (NumberOfDataLines, NumberOfProductSaved[0] + NumberOfProductSaved[1]);
     }
 

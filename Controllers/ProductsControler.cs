@@ -77,19 +77,12 @@ public class ProductsController : ControllerBase
     }
 
 
-    [HttpPut]
-    public IActionResult Put()
+    [HttpPut("{id}")]
+    public async Task<ActionResult<Product>> Update(long id, Product product)
     {
-
-        Product product = new()
-        {
-            Name = "product 1",
-            Description = "product Description 1 ",
-            Price = 1.2m,
-            Category = "Category 1"
-
-        };
-        return Ok(product);
+        var updated = await _productService.UpdateAsync(id, product);
+        if (updated == null) return NotFound();
+        return Ok(updated);
     }
 
     [HttpPost("UploadCsv")]

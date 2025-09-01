@@ -9,9 +9,9 @@ public interface IProductService
     Task<List<Product>> GetAll();
     Task<Product?> GetProductByIdAsync(long id); // for active products
 
-
-    //POST 
     Task<Product> CreateAsync(Product product);
+    Task<Product?> UpdateAsync(long id, Product product);
+
     Task<(int numOfLines, int numberofLinesSavedtoDB)> UploadProductCSVFile(IFormFile file, int minimumNumOfLines);
 
     //Delete 
