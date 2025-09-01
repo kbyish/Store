@@ -121,11 +121,11 @@ public class ProductsController : ControllerBase
                 return NoContent();
             }
 
-            StringBuilder message = new($"there are {NumberOfDataLines} of lines in CSV file ");
+            StringBuilder message = new($"there are {NumberOfDataLines} of lines in CSV file. ");
 
             if (NumberOfDataLines == NumberOfProductSaved)
-                message.Append("All Lines Has been Saved Sucessfully");
-            else message.Append($"only {NumberOfProductSaved} lines has been saved  succesfuly");
+                message.Append(" All Lines Has been Saved Sucessfully.");
+            else message.Append($" Only {NumberOfProductSaved} lines has been saved  succesfuly.");
 
             return Ok(message.ToString());
         }
