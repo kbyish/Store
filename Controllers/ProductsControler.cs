@@ -85,7 +85,7 @@ public class ProductsController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpPost("UploadCsv")]
+    [HttpPost("UploadCsv/getCsvData")]
     public async Task<IActionResult> UploadCsv(IFormFile file)
     {
         if (file is null || file.Length == 0)
@@ -126,11 +126,9 @@ public class ProductsController : ControllerBase
         {
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
-
-
     }
 
-    [HttpDelete]
+    [HttpDelete("{id}") ]
     public async Task<ActionResult> Delete(long id)
     {
         bool isDeleted = await _productService.Delete(id);
@@ -138,7 +136,6 @@ public class ProductsController : ControllerBase
         {
             return NoContent();
         }
-
         return NotFound();
     }
 }
