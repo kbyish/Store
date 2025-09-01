@@ -13,17 +13,30 @@ namespace Store.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ProductController : ControllerBase
+public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
     private readonly ILogger<EmployeeController> _logger;
     private readonly IMapper _mapper;
 
-    public ProductController(IProductService productService, ILogger<EmployeeController> logger, IMapper mapper)
+    public ProductsController(IProductService productService, ILogger<EmployeeController> logger, IMapper mapper)
     {
         _productService = productService;
         _logger = logger;
         _mapper = mapper;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+
+        var products = await _productService.GetAll();
+        if (products.Count == 0)
+        {
+            return NoContent();
+        }
+
+        return Ok(products);
     }
 
     [HttpGet("{id}")]
@@ -48,7 +61,7 @@ public class ProductController : ControllerBase
     [ProducesResponseType(400)]
     public async Task<IActionResult> Create([FromBody] CreateProductDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Name) || dto.Price <= 0 )
+        if (string.IsNullOrWhiteSpace(dto.Name) || dto.Price <= 0)
             return BadRequest(new ApiResponse<string>(false, "Invalid product input"));
 
         var product = _mapper.Map<Product>(dto);
@@ -92,19 +105,30 @@ public class ProductController : ControllerBase
             return BadRequest("Only CSV files are allowed.");
         }
 
-
+        const int minimumNumOfLines = 3; // Minimum number of lines that csv file must have  
 
         try
         {
-            List<Product> products = await _productService.UploadProductCSVFile(file);
+            (int NumberOfDataLines , int NumberOfProductSaved) = await _productService.UploadProductCSVFile(file, minimumNumOfLines);
 
-            return Ok(products);
+            if (NumberOfDataLines < minimumNumOfLines)
+            {
+                return BadRequest("CSV File must have at least 10 lines of data.");
+            }
 
+            if (NumberOfProductSaved == 0)
+            {
+                return NoContent();
+            }
+
+            return Ok("");
         }
         catch (Exception ex)
         {
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
+        
+
     }
 
     [HttpDelete]

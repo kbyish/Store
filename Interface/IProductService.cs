@@ -1,3 +1,4 @@
+using Store.Contracts;
 using Store.Models;
 
 namespace Store.Interface;
@@ -5,12 +6,13 @@ namespace Store.Interface;
 public interface IProductService
 {
     // General GET methods for retrieving products
+    Task<List<Product>> GetAll();
     Task<Product?> GetProductByIdAsync(long id); // for active products
 
 
     //POST 
     Task<Product> CreateAsync(Product product);
-    Task<List<Product>> UploadProductCSVFile(IFormFile file);
+    Task<(int numOfLines, int numberofLinesSavedtoDB)> UploadProductCSVFile(IFormFile file, int minimumNumOfLines);
 
     //Delete 
     Task<bool> Delete(long id);

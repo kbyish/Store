@@ -1,7 +1,9 @@
 
+using System.Globalization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Store.AppDataContext;
+using Store.Contracts;
 using Store.Interface;
 using Store.Models;
 
@@ -10,11 +12,11 @@ namespace Store.Services;
 public class ProductService : IProductService
 {
 
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _dbContext;
 
-    public ProductService(AppDbContext context)
+    public ProductService(AppDbContext dbContext)
     {
-        _context = context;
+        _dbContext = dbContext;
     }
 
     IEnumerable<Product> products = [
@@ -22,59 +24,37 @@ public class ProductService : IProductService
         new (){Id = 2, Name = "product 2",  Description = "product Description 2 ", Price = 2.2m, Category = "Category 2" },
         new (){Id = 3, Name = "product 3",  Description = "product Description 3 ", Price = 3.2m, Category = "Category 3" }
     ];
+
     public async Task<Product?> GetProductByIdAsync(long id)
     {
-        // await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
-        //return products.FirstOrDefault(p => p.Id == id);
-        var x = await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
-        return x;
+        return await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+
+    public async Task<List<Product>> GetAll()
+    {
+        return await _dbContext.Products.ToListAsync();
 
     }
 
     //Create Product
     public async Task<Product> CreateAsync(Product product)
     {
-        _context.Products.Add(product);
-        await _context.SaveChangesAsync();
+        _dbContext.Products.Add(product);
+        await _dbContext.SaveChangesAsync();
         return product;
     }
-
-    public async Task<List<Product>> UploadProductCSVFile(IFormFile file)
-    {
-        List<Product> products = [];
-        // Read the CSV content from the uploaded file
-        using var reader = new StreamReader(file.OpenReadStream());
-        string csvContent = await reader.ReadToEndAsync();
-        string[] lines = csvContent.Split("\r\n");
-
-
-
-        for (int i = 1; i < lines.Length; i++)
-        {
-            string[] records = lines[i].Split(',');
-
-            decimal.TryParse(records[2], out decimal priceDecimalValue);
-
-            products.Add(new Product { Name = records[0], Description = records[1], Price = priceDecimalValue, Category = records[3] });
-        }
-
-
-        // Example: Just return the content for demonstration
-        return products;
-    }
-
-
 
     public async Task<bool> Delete(long id)
     {
         await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
 
-        var product = await _context.Products.FindAsync(id);
+        var product = await _dbContext.Products.FindAsync(id);
 
         if (product?.Id == id)
         {
-            _context.Products.Remove(product); // Remove from database
-            await _context.SaveChangesAsync();
+            _dbContext.Products.Remove(product); // Remove from database
+            await _dbContext.SaveChangesAsync();
             return true; // Deletion successful
         }
 
@@ -83,120 +63,77 @@ public class ProductService : IProductService
     }
 
 
-    private async void ReadFile(IFormFile file)
+    public async Task<(int,int)> UploadProductCSVFile(IFormFile file, int minimumNumOfLines)
     {
-
+        List<string> lines1 = [];
+        List<string> lines2 = [];
         using (var reader = new StreamReader(file.OpenReadStream()))
         {
             // Skip header if present
             await reader.ReadLineAsync();
 
-            string? line;
-            while ((line = await reader.ReadLineAsync()) != null)
+            int counter = 0;
+            while (!reader.EndOfStream)
             {
-                // Split the line by comma to get individual fields
-                var fields = line.Split(',');
-
-                // Perform validation and parsing
-                if (fields.Length != 4)
-                {
-                    // Handle invalid line format
-                    continue;
-                }
-
-                // Extract and parse fields
-                string? name = fields[0]?.Trim();
-                string? description = fields[1]?.Trim();
-                decimal price;
-                if (!decimal.TryParse(fields[2]?.Trim(), out price))
-                {
-                    // Handle invalid price format
-                    continue;
-                }
-                string? category = fields[3]?.Trim();
-
-                // Perform additional validation on each field (e.g., length, content)
-                if (string.IsNullOrWhiteSpace(name) || price < 0 || string.IsNullOrWhiteSpace(category))
-                {
-                    // Handle invalid data
-                    continue;
-                }
-
-                // Create an object to represent the data
-                // var product = new Product
-                // {
-                //     Name = name,
-                //     Description = description,
-                //     Price = price,
-                //     Category = category
-                // };
-
-                // Save to database
-                // _dbContext.Products.Add(product);
-                // await _dbContext.SaveChangesAsync();
+                var line = await reader.ReadLineAsync();
+                if (!string.IsNullOrWhiteSpace(line))
+                    if (counter++ % 2 == 0) lines1.Add(line);
+                    else lines2.Add(line);
             }
         }
 
+        int NumberOfDataLines = lines1.Count + lines2.Count;
+
+        if (NumberOfDataLines < minimumNumOfLines)
+        {
+            return (NumberOfDataLines, 0);
+        }
+
+        var tasks = new[]
+        {
+            Task.Run(() => ProcessLines(lines1)),
+            Task.Run(() => ProcessLines(lines2))
+        };
+
+       int[]NumberOfProductSaved = await Task.WhenAll(tasks);
+        return (NumberOfDataLines, NumberOfProductSaved[0] + NumberOfProductSaved[1]);
     }
 
-
-    private async Task<List<Product>> ReadFileNoString(IFormFile file)
+    private int ProcessLines(List<string> lines)
     {
-
-        List<Product> products = new List<Product>();
-        using (var reader = new StreamReader(file.OpenReadStream()))
+        int NumberOfProductSaved = 0;
+        foreach (var line in lines)
         {
+            Thread.Sleep(3500); // 3.5s delay
+            var cols = line.Split(',');
+
+            // Validate
+            if (cols.Length < 4) continue;
+            var name = cols[0].Trim();
+            var description = cols[1].Trim();
+            if (!decimal.TryParse(cols[2].Trim(), out var price)) continue;
+            var category = cols[3].Trim();
+
+            if (string.IsNullOrEmpty(name) || price < 0 || string.IsNullOrEmpty(category))
+                continue;
 
 
-            // Skip header if present
-            await reader.ReadLineAsync();
-
-            StringBuilder line = new("");
-            while ((line.Append(await reader.ReadLineAsync())) != null)
+            NumberOfProductSaved++;
+            // Store in DB (use locking for thread safety in InMemoryDb)
+            lock (_dbContext)
             {
-                // Split the line by comma to get individual fields
-                var fields = line.ToString().Split(',');
-
-                // Perform validation and parsing
-                if (fields.Length != 4)
-                {
-                    // Handle invalid line format
-                    continue;
-                }
-
-                // Extract and parse fields
-                string? name = fields[0]?.Trim();
-                string description = fields[1].Trim();
-                decimal price;
-                if (!decimal.TryParse(fields[2]?.Trim(), out price))
-                {
-                    // Handle invalid price format
-                    continue;
-                }
-                string? category = fields[3]?.Trim();
-
-                // Perform additional validation on each field (e.g., length, content)
-                if (string.IsNullOrWhiteSpace(name) || price < 0 || string.IsNullOrWhiteSpace(category))
-                {
-                    // Handle invalid data
-                    continue;
-                }
-
-                products.Add(new Product
+                _dbContext.Products.Add(new Product
                 {
                     Name = name,
                     Description = description,
                     Price = price,
                     Category = category
                 });
-
-                // Save to database
-                // _dbContext.Products.Add(product);
-                // await _dbContext.SaveChangesAsync();
-
-
+                _dbContext.SaveChanges();
             }
+
         }
-        return products;
+
+        return NumberOfProductSaved;
     }
 }
