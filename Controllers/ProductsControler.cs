@@ -16,10 +16,10 @@ namespace Store.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
-    private readonly ILogger<EmployeeController> _logger;
+    private readonly ILogger<ProductsController> _logger;
     private readonly IMapper _mapper;
 
-    public ProductsController(IProductService productService, ILogger<EmployeeController> logger, IMapper mapper)
+    public ProductsController(IProductService productService, ILogger<ProductsController> logger, IMapper mapper)
     {
         _productService = productService;
         _logger = logger;
@@ -109,7 +109,7 @@ public class ProductsController : ControllerBase
 
         try
         {
-            (int NumberOfDataLines , int NumberOfProductSaved) = await _productService.UploadProductCSVFile(file, minimumNumOfLines);
+            (int NumberOfDataLines, int NumberOfProductSaved) = await _productService.UploadProductCSVFile(file, minimumNumOfLines);
 
             if (NumberOfDataLines < minimumNumOfLines)
             {
@@ -121,13 +121,19 @@ public class ProductsController : ControllerBase
                 return NoContent();
             }
 
-            return Ok("");
+            StringBuilder message = new($"there are {NumberOfDataLines} of lines in CSV file ");
+
+            if (NumberOfDataLines == NumberOfProductSaved)
+                message.Append("All Lines Has been Saved Sucessfully");
+            else message.Append($"only {NumberOfProductSaved} lines has been saved  succesfuly");
+
+            return Ok(message.ToString());
         }
         catch (Exception ex)
         {
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
-        
+
 
     }
 
