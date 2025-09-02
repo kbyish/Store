@@ -31,9 +31,12 @@ public class ProductService : IProductService
     }
 
 
-    public async Task<List<Product>> GetAll()
+    public async Task<List<Product>> GetAll(int pageNumber, int pageSize)
     {
-        return await _dbContext.Products.ToListAsync();
+        return await _dbContext.Products
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
     }
 

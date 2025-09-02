@@ -6,7 +6,7 @@ namespace Store.Interface;
 public interface IProductService
 {
     // General GET methods for retrieving products
-    Task<List<Product>> GetAll();
+    Task<List<Product>> GetAll(int pageNumber, int pageSize);
     Task<Product?> GetProductByIdAsync(long id); // for active products
 
     Task<Product> CreateAsync(Product product);

@@ -27,10 +27,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll( int pageNumber = 1, int pageSize = 10)
     {
-
-        var products = await _productService.GetAll();
+        var products = await _productService.GetAll(pageNumber, pageSize);
         if (products.Count == 0)
         {
             return NoContent();
