@@ -64,7 +64,7 @@ public class ProductService : IProductService
 
     public async Task<bool> Delete(long id)
     {
-        await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
+        // await Task.Delay(2000); // Waits for 2 seconds without blocking the thread
 
         var product = await _dbContext.Products.FindAsync(id);
 

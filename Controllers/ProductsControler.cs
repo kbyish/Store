@@ -84,7 +84,7 @@ public class ProductsController : ControllerBase
         return Ok(updated);
     }
 
-    [HttpPost("UploadCsv/getCsvData")]
+    [HttpPost("UploadCsv")]
     public async Task<IActionResult> UploadCsv(IFormFile file)
     {
         if (file is null || file.Length == 0)
